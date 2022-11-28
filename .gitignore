@@ -1,2 +1,6 @@
 /.idea/
-/杂/
+.coverage
+.idea
+.pytest_cache
+*.log
+htmlcov

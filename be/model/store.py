@@ -21,9 +21,9 @@ class Store:
 
             conn.execute(
                 "CREATE TABLE IF NOT EXISTS user_store("
-                "user_id TEXT, store_id, PRIMARY KEY(user_id, store_id));"
+                "user_id TEXT, store_id TEXT, PRIMARY KEY(user_id, store_id));"
             )
-
+        
             conn.execute(
                 "CREATE TABLE IF NOT EXISTS store( "
                 "store_id TEXT, book_id TEXT, book_info TEXT, stock_level INTEGER,"
