@@ -41,6 +41,16 @@ class Store:
                 "PRIMARY KEY(order_id, book_id))"
             )
 
+            conn.execute(
+                "CREATE TABLE IF NOT EXISTS book ("
+                "id TEXT PRIMARY KEY, title TEXT, author TEXT, "
+                "publisher TEXT, original_title TEXT, "
+                "translator TEXT, pub_year TEXT, pages INTEGER, "
+                "price INTEGER, currency_unit TEXT, binding TEXT, "
+                "isbn TEXT, author_intro TEXT, book_intro text, "
+                "content TEXT, tags TEXT, picture BLOB)"
+            )
+
             conn.commit()
         except sqlite.Error as e:
             logging.error(e)
