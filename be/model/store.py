@@ -7,7 +7,11 @@ class Store:
     database: str
 
     def __init__(self, db_path):
-        self.database = os.path.join(db_path, "be.db")
+        pwd = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+        db_address = os.path.join(pwd, "data/bookstore.db")
+        # 最后我们只要换掉这个db_address就可以换成psql
+        self.database = db_address
+
         self.init_tables()
 
     def init_tables(self):
@@ -61,3 +65,9 @@ def init_database(db_path):
 def get_db_conn():
     global database_instance
     return database_instance.get_db_conn()
+
+if __name__ == "__main__":
+    pwd = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    
+    print(pwd)
+    init_database(pwd)
