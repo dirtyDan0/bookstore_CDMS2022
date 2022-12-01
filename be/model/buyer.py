@@ -20,37 +20,35 @@ class Buyer(db_conn.CheckExist):
                 return error.error_non_exist_store_id(store_id) + (order_id, )
             uid = "{}_{}_{}".format(user_id, store_id, str(uuid.uuid1()))
 
-            for book_id, count in id_and_count:
+            #new_order 和 new_order_detail 应该在一个session内，这样出错了就能一起rollback
+            with self.get_session() as session:
 
-                row = None
-                with self.get_session() as session:
-                    
+                for book_id, count in id_and_count:                    
+                        
                     row = session.query(Store_model.book_id,
-                                        Store_model.stock_level,
-                                        Store_model.book_info
-                                    ).filter(and_(Store_model.store_id == store_id, Store_model.book_id == book_id)).all()
+                                            Store_model.stock_level,
+                                            Store_model.book_info
+                                        ).filter(and_(Store_model.store_id == store_id, Store_model.book_id == book_id)).all()
 
                     if len(row) != 1 :
                         return error.error_non_exist_book_id(book_id) + (order_id, )
-                    
-                row = row[0]
+                        
+                    row = row[0]
 
-                stock_level = row.stock_level
-                book_info = row.book_info
-                book_info_json = json.loads(book_info)
-                price = book_info_json.get("price")
+                    stock_level = row.stock_level
+                    book_info = row.book_info
+                    book_info_json = json.loads(book_info)
+                    price = book_info_json.get("price")
 
-                if stock_level < count:
-                    return error.error_stock_level_low(book_id) + (order_id,)
-                    
-                with self.get_session() as session:
-
+                    if stock_level < count:
+                        return error.error_stock_level_low(book_id) + (order_id,)
+                        
                     row = session.query(Store_model).filter(and_(
                         Store_model.store_id==store_id,
                         Store_model.book_id==book_id,
                         Store_model.stock_level>=count)).all()
 
-                    
+                        
                     if len(row) != 1:
                         return error.error_stock_level_low(book_id) + (order_id, )
 
@@ -59,13 +57,11 @@ class Buyer(db_conn.CheckExist):
 
                     session.add(row)
 
-                with self.get_session() as session:
-
                     new_order_detail = NewOrderDetail_model(order_id=uid, book_id=book_id, count=count, price=price)
-                    
+                        
                     session.add(new_order_detail)
 
-            with self.get_session() as session:
+            
                 new_order = NewOrder_model(order_id = uid, store_id = store_id, user_id = user_id)
                 session.add(new_order)
                              
@@ -140,6 +136,7 @@ class Buyer(db_conn.CheckExist):
             if balance < total_price:
                 return error.error_not_sufficient_funds(order_id)
 
+            #卖家买家的余额变动、删除new_order(detail)必须在一个session里，这样可以出错了rollback
             with self.get_session() as session:
                 buyer = session.query(User_model).filter(and_(User_model.user_id==buyer_id,User_model.balance>=total_price)).all()
                 if len(buyer) !=1:
@@ -149,7 +146,6 @@ class Buyer(db_conn.CheckExist):
                 buyer.balance = buyer.balance-total_price
                 session.add(buyer)
 
-            with self.get_session() as session:
                 seller = session.query(User_model).filter(User_model.user_id == seller_id).all()
                 if len(seller) !=1:
                     return error.error_non_exist_user_id(seller_id)
@@ -158,13 +154,13 @@ class Buyer(db_conn.CheckExist):
                 seller.balance = seller.balance+total_price
                 session.add(seller)
             
-            with self.get_session() as session:
+            
                 new_order = session.query(NewOrder_model).filter(NewOrder_model.order_id==order_id).all()
                 if len(new_order) !=1:
                     return error.error_invalid_order_id(order_id)
                 session.query(NewOrder_model).filter(NewOrder_model.order_id==order_id).delete()
 
-            with self.get_session() as session:
+            
                 new_order = session.query(NewOrderDetail_model).filter(NewOrderDetail_model.order_id==order_id).all()
                 if len(new_order) ==0:
                     return error.error_invalid_order_id(order_id)
@@ -183,16 +179,14 @@ class Buyer(db_conn.CheckExist):
         try:
             row = None
             with self.get_session() as session:
-                row = session.query(User_model.password).filter(User_model.user_id == user_id).all()
-                
-            if len(row) != 1:
-                return error.error_authorization_fail()
-            row = row[0]
-            if row.password != password:
-                return error.error_authorization_fail()
-
-            with self.get_session() as session:
                 row = session.query(User_model).filter(User_model.user_id == user_id).all()
+                
+                if len(row) ==0:
+                    return error.error_authorization_fail()
+                user = row[0]
+                if user.password != password:
+                    return error.error_authorization_fail()
+
                 
                 if len(row) != 1:
                     return error.error_non_exist_user_id(user_id) 
