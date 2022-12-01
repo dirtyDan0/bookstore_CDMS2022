@@ -7,3 +7,4 @@ htmlcov
 *.pyc
 __pycache__/
 not_upload/
+bookstore.db
