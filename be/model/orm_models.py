@@ -1,8 +1,13 @@
-from sqlalchemy import Column, Integer, Text, LargeBinary, DateTime
+from sqlalchemy import text, Index, Column, Integer, Text, LargeBinary, DateTime
 from sqlalchemy.orm import declarative_base
+from sqlalchemy.sql import func
 
 Base = declarative_base()
-
+"""
+def to_tsvector_ix(*columns):
+    s = " || ' ' || ".join(columns)
+    return func.to_tsvector('english', text(s))
+"""
 class Book(Base):
     __tablename__ = 'bookstore_book'
 
@@ -23,8 +28,15 @@ class Book(Base):
     content = Column(Text)
     tags = Column(Text)
     picture = Column(LargeBinary)
-
-
+"""
+    __table_args__ = (
+        Index(
+            'ix_book_tsv',
+            to_tsvector_ix('title', 'author', 'tags', 'book_intro', 'content'),
+            postgresql_using='gin'
+        ),
+    )
+"""
 class NewOrder(Base):
     __tablename__ = 'bookstore_new_order'
 

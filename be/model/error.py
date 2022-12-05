@@ -12,7 +12,7 @@ error_code = {
     519: "not sufficient funds, order id {}",
     520: "",
     521: "",
-    522: "",
+    522: "non exist query result",
     523: "",
     524: "",
     525: "",
@@ -64,3 +64,6 @@ def error_authorization_fail():
 
 def error_and_message(code, message):
     return code, message
+
+def error_non_exist_search():
+    return 522, error_code[522]
