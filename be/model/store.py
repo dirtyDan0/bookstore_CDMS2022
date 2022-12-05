@@ -7,7 +7,7 @@ from be.model.orm_models import createTable
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker,scoped_session
 from contextlib import contextmanager
-import psycopg2
+#import psycopg2
 
 
 class Store:
