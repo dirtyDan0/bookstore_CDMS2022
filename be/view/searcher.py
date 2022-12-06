@@ -14,8 +14,9 @@ def search():
     store_id: str = request.json.get("store_id")
     keyword: str = request.json.get("keyword")
     se = Searcher()
+    print(se.search(user_id, store_id, keyword))
     code, pagenum, row, show = se.search(user_id, store_id, keyword)
-    return jsonify({"pagenum": pagenum, "row": row, "show": show}), code, "success"
+    return jsonify({"pagenum": pagenum, "row": row, "show": show}), code
 
 
 @bp_searcher.route("/show_pages", methods=["POST"])
@@ -25,5 +26,5 @@ def show_pages():
     content: str = request.json.get("content")
 
     se = Searcher()
-    code, show, content1 = se.show_pages(user_id, page, content)
-    return jsonify({"show": show, "content": content1}), code
+    code, show, row = se.show_pages(user_id, page, content)
+    return jsonify({"show": show, "row": row}), code

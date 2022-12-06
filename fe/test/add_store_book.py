@@ -12,11 +12,11 @@ class AddStoreBook:
         self.user_id = "test_seller_id_{}".format(str(uuid.uuid1()))
         self.password = self.user_id
         self.seller = register_new_seller(self.user_id, self.password)
-        if store_id != None:
+        if store_id != "": #店铺内
             self.store_id = store_id
             code = self.seller.create_store(store_id)
             assert code == 200
-        else:
+        else: #全站
             self.store_id_num = random.randint(5, 20)
             for i in range(self.store_id_num):
                 self.store_id_list.append(str(uuid.uuid1()))
@@ -28,7 +28,7 @@ class AddStoreBook:
         book_db = book.BookDB()
         rows = book_db.get_book_count()
 
-        if  self.store_id_list == []:
+        if  self.store_id_list == []: #店铺内
             start = 0
             if rows > max_book_count:
                 start = random.randint(0, rows - max_book_count)
@@ -38,7 +38,7 @@ class AddStoreBook:
                 stock_level = random.randint(0, 100)
                 code = self.seller.add_book(self.store_id, stock_level, bk)
                 assert code == 200
-        else:
+        else: #全站
             for i in range(self.store_id_num):
                 start = 0
                 if rows > max_book_count:
@@ -47,7 +47,7 @@ class AddStoreBook:
                 books = book_db.get_book_info(start, size)
                 for bk in books:
                     stock_level = random.randint(0, 100)
-                    code = self.seller.add_book(self.store_id[i], stock_level, bk)
+                    code = self.seller.add_book(self.store_id_list[i], stock_level, bk)
                     assert code == 200
 
         return ok

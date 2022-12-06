@@ -21,13 +21,17 @@ class Searcher:
             "keyword": keyword
         }
         url = urljoin(self.url_prefix, "search")
-        headers = {"token": self.token}
+        headers = {"token": self.token, "Content-Type": "application/json"}
+
+        #json_str = json.dumps(json_)
+        #print(json_str)
         print(url)
         r = requests.post(url, headers=headers, json=json)
-
-        # response_json = r.json()
-        # return r.status_code, response_json.get("pagenum"), response_json.get("row"), response_json.get("show")
-        return r.status_code
+        print(r)
+        response_json = r.json()
+        return r.status_code, response_json.get("pagenum"), response_json.get("row"), response_json.get("show")
+        #print(r)
+        #return r.status_code
 
     def show_pages(self, page, content):
         json = {

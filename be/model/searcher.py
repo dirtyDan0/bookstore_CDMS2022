@@ -13,13 +13,13 @@ class Searcher(db_conn.CheckExist):
         try:
             # 全站搜索
             if store_id == '':
-                print("222")
-                print(self.user_id_exist(user_id))
+                #print("222")
+                #print(self.user_id_exist(user_id))
                 if not self.user_id_exist(user_id):
                     return error.error_non_exist_user_id(user_id)
-                print("333")
+                #print("333")
                 with self.get_session() as session:
-                    print("1111")
+                    #print("1111")
                     row = session.query(book_model.title, book_model.author, book_model.publisher,
                                         book_model.translator,
                                         book_model.pub_year, book_model.pages, book_model.price,
@@ -36,15 +36,14 @@ class Searcher(db_conn.CheckExist):
                         return error.error_non_exist_search()
                     else:
                         pagenum = len(row) // 5
-                        if pagenum == 0:
+                        if pagenum == 0 :
+                            pagenum = 1
                             show = row
                         else:
                             page = len(row) % 5
-                            if page == 0:
-                                pagenum = pagenum
-                            else:
+                            if page != 0:
                                 pagenum += 1
-                            show = row.limit(5)
+                            show = row[:5]
                         # return 200, "ok", pagenum, row, show
             # 店铺搜索
             else:
@@ -71,14 +70,13 @@ class Searcher(db_conn.CheckExist):
                     else:
                         pagenum = len(row) // 5
                         if pagenum == 0:
+                            pagenum = 1
                             show = row
                         else:
                             page = len(row) % 5
-                            if page == 0:
-                                pagenum = pagenum
-                            else:
+                            if page != 0:
                                 pagenum += 1
-                            show = row.limit(5)
+                            show = row[:5]
                         #print(pagenum, row, show)
                         # return 200, "ok", pagenum, row, show
 
@@ -93,12 +91,12 @@ class Searcher(db_conn.CheckExist):
             if not self.user_id_exist(user_id):
                 return error.error_non_exist_user_id(user_id)
 
-            off = page * 5
-            remain = content - off
+            off = (page-1) * 5
+            remain = len(content) - off
             if remain > 5:
-                show = content.offset(off).limit(5)
+                show = content[off:(off+5)]
             else:
-                show = content.offset(off)
+                show = content[off:]
             # return 200, "ok", show, content
 
         except SQLAlchemyError as e:
