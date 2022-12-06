@@ -14,33 +14,42 @@ class Searcher:
         code, self.token = self.auth.login(self.user_id, self.password, self.terminal)
         assert code == 200
 
-    def search(self, store_id: str, keyword: str):
+    def search(self, store_id: str, keyword: str, va: bool):
         json = {
             "user_id": self.user_id,
             "store_id": store_id,
-            "keyword": keyword
+            "keyword": keyword,
+            "variable": va
         }
         url = urljoin(self.url_prefix, "search")
         headers = {"token": self.token, "Content-Type": "application/json"}
 
         #json_str = json.dumps(json_)
         #print(json_str)
-        print(url)
+        #print(url)
         r = requests.post(url, headers=headers, json=json)
-        print(r)
         response_json = r.json()
-        return r.status_code, response_json.get("pagenum"), response_json.get("row"), response_json.get("show")
+        if va:
+            return r.status_code, response_json.get("pagenum"), response_json.get("row"), response_json.get("show")
         #print(r)
         #return r.status_code
+        else:
+            print(r)
+            return r.status_code
 
-    def show_pages(self, page, content):
+
+    def show_pages(self, page, content, va):
         json = {
             "user_id": self.user_id,
             "page": int(page),
-            "content": content
+            "content": content,
+            "variable": va
         }
         url = urljoin(self.url_prefix, "show_pages")
         headers = {"token": self.token}
         r = requests.post(url, headers=headers, json=json)
         response_json = r.json()
-        return r.status_code, response_json.get("pagenum"), response_json.get("row"), response_json.get("show")
+        if va:
+            return r.status_code, response_json.get("pagenum"), response_json.get("row"), response_json.get("show")
+        else:
+            return r.status_code

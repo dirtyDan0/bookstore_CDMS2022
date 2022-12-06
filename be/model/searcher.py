@@ -8,23 +8,21 @@ from sqlalchemy import and_, or_
 
 class Searcher(db_conn.CheckExist):
 
-    # 题目，作者，标签，简介，目录(title, author, tags, book_intro, content)
+    # 题目，作者，出版商，翻译，出版日期，页数，价格，标签，简介，目录
     def search(self, user_id: str, store_id: str, keyword: str):
         try:
             # 全站搜索
             if store_id == '':
-                #print("222")
-                #print(self.user_id_exist(user_id))
                 if not self.user_id_exist(user_id):
                     return error.error_non_exist_user_id(user_id)
-                #print("333")
+
                 with self.get_session() as session:
-                    #print("1111")
+
                     row = session.query(book_model.title, book_model.author, book_model.publisher,
                                         book_model.translator,
                                         book_model.pub_year, book_model.pages, book_model.price,
                                         book_model.author_intro,
-                                        book_model.book_intro, book_model.tags, book_model.picture) \
+                                        book_model.book_intro, book_model.tags) \
                         .join(Store_model, Store_model.book_id == book_model.id) \
                         .filter(and_(Store_model.stock_level > 0, or_(
                         book_model.title.like("%" + keyword + "%"), book_model.author.like("%" + keyword + "%"),
@@ -57,7 +55,7 @@ class Searcher(db_conn.CheckExist):
                                         book_model.translator,
                                         book_model.pub_year, book_model.pages, book_model.price,
                                         book_model.author_intro,
-                                        book_model.book_intro, book_model.tags, book_model.picture) \
+                                        book_model.book_intro, book_model.tags) \
                         .join(Store_model, Store_model.book_id == book_model.id) \
                         .filter(and_(Store_model.store_id == store_id, Store_model.stock_level > 0, or_(
                         book_model.title.like("%" + keyword + "%"), book_model.author.like("%" + keyword + "%"),
