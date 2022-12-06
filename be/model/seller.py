@@ -1,6 +1,6 @@
 from be.model import error
 from be.model import db_conn
-from be.model.orm_models import Store as Store_model,UserStore as UserStore_model
+from be.model.orm_models import Store as Store_model,UserStore as UserStore_model,NewOrder as NewOrder_model, NewOrderDetail as NewOrderDetail_model
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import and_,or_
 
@@ -58,6 +58,45 @@ class Seller(db_conn.CheckExist):
                 new_userstore = UserStore_model(store_id=store_id,user_id=user_id)
                 session.add(new_userstore)
                 
+        except SQLAlchemyError as e:
+            return 528, "{}".format(str(e))
+        except BaseException as e:
+            return 530, "{}".format(str(e))
+        return 200, "ok"
+
+    def delivered(self, user_id: str, order_id: str) -> (int, str):
+        try:
+            row = None
+            with self.get_session() as session:
+                row = session.query(NewOrder_model.order_id,
+                                    NewOrder_model.store_id, NewOrder_model.status).filter(
+                    NewOrder_model.order_id == order_id).all()
+
+                if len(row) != 1:
+                    return error.error_invalid_order_id(order_id)
+
+            row = row[0]
+            store_id = row.store_id
+            status = row.status
+
+            # 判断订单的store_id是否是属于该user_id的
+            seller = session.query(UserStore_model.user_id).filter(UserStore_model.store_id == store_id).all()
+            seller_id = seller[0].user_id
+            if user_id != seller_id:
+                return error.error_authorization_fail()
+
+            # 检查订单状态为已支付，其他状态不允许收货
+            if status == "已支付":
+                with self.get_session() as session:
+                    row = session.query(NewOrder_model).filter(NewOrder_model.order_id == order_id).all()
+                    if len(row) != 1:
+                        return error.error_invalid_order_id(order_id)
+                    row = row[0]
+                    row.status = "已发货"
+                    session.add(row)
+            else:
+                return error.error_status_not_allowed(order_id)
+
         except SQLAlchemyError as e:
             return 528, "{}".format(str(e))
         except BaseException as e:

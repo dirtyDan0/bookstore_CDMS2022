@@ -10,7 +10,7 @@ error_code = {
     517: "stock level low, book id {}",
     518: "invalid order id {}",
     519: "not sufficient funds, order id {}",
-    520: "",
+    520: "status not allowed, order id {}",
     521: "",
     522: "non exist query result",
     523: "",
@@ -67,3 +67,7 @@ def error_and_message(code, message):
 
 def error_non_exist_search():
     return 522, error_code[522]
+
+def error_status_not_allowed(order_id):
+    return 520, error_code[520].format(order_id)
+

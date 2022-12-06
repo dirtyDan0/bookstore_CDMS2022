@@ -7,7 +7,7 @@ from be.model.orm_models import Store as Store_model, NewOrderDetail as NewOrder
 from be.model.orm_models import UserStore as UserStore_model
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import and_,or_
-
+from datetime import datetime
 
 class Buyer(db_conn.CheckExist):
 
@@ -61,8 +61,9 @@ class Buyer(db_conn.CheckExist):
                         
                     session.add(new_order_detail)
 
-            
-                new_order = NewOrder_model(order_id = uid, store_id = store_id, user_id = user_id)
+                # 订单创建时间，状态初始为未支付
+                time_now = datetime.now()
+                new_order = NewOrder_model(order_id = uid, store_id = store_id, user_id = user_id, status = "未支付", time = time_now)
                 session.add(new_order)
                              
                         
@@ -153,18 +154,26 @@ class Buyer(db_conn.CheckExist):
                 seller = seller[0]
                 seller.balance = seller.balance+total_price
                 session.add(seller)
-            
-            
-                new_order = session.query(NewOrder_model).filter(NewOrder_model.order_id==order_id).all()
-                if len(new_order) !=1:
-                    return error.error_invalid_order_id(order_id)
-                session.query(NewOrder_model).filter(NewOrder_model.order_id==order_id).delete()
 
-            
-                new_order = session.query(NewOrderDetail_model).filter(NewOrderDetail_model.order_id==order_id).all()
-                if len(new_order) ==0:
+                # 支付以后订单不删除，修改状态已支付为未支付
+                order = session.query(NewOrder_model).filter(NewOrder_model.order_id == order_id).all()
+                if len(order) != 1:
                     return error.error_invalid_order_id(order_id)
-                session.query(NewOrderDetail_model).filter(NewOrderDetail_model.order_id==order_id).delete()
+
+                order = order[0]
+                order.status = "已支付"
+                session.add(order)
+
+                # new_order = session.query(NewOrder_model).filter(NewOrder_model.order_id==order_id).all()
+                # if len(new_order) !=1:
+                #     return error.error_invalid_order_id(order_id)
+                # session.query(NewOrder_model).filter(NewOrder_model.order_id==order_id).delete()
+                #
+                #
+                # new_order = session.query(NewOrderDetail_model).filter(NewOrderDetail_model.order_id==order_id).all()
+                # if len(new_order) ==0:
+                #     return error.error_invalid_order_id(order_id)
+                # session.query(NewOrderDetail_model).filter(NewOrderDetail_model.order_id==order_id).delete()
             
 
         except SQLAlchemyError as e:
@@ -198,6 +207,44 @@ class Buyer(db_conn.CheckExist):
 
         except SQLAlchemyError as e:
             return 528, "{}".format(str(e))
+        except BaseException as e:
+            return 530, "{}".format(str(e))
+
+        return 200, "ok"
+
+    def received(self, user_id: str, order_id: str) -> (int, str):
+        try:
+            row = None
+            with self.get_session() as session:
+                row = session.query(NewOrder_model.order_id, NewOrder_model.user_id,
+                                    NewOrder_model.status).filter(NewOrder_model.order_id == order_id).all()
+
+                if len(row) != 1:
+                    return error.error_invalid_order_id(order_id)
+
+            row = row[0]
+            order_id = row.order_id
+            buyer_id = row.user_id
+            status = row.status
+
+            if user_id != buyer_id:
+                return error.error_authorization_fail()
+
+            # 只有状态为已发货的订单才能收货
+            if status == "已发货":
+                with self.get_session() as session:
+                    row = session.query(NewOrder_model).filter(NewOrder_model.order_id == order_id).all()
+                    if len(row) != 1:
+                        return error.error_invalid_order_id(order_id)
+                    row = row[0]
+                    row.status = "已收货"
+                    session.add(row)
+            else:
+                return error.error_status_not_allowed(order_id)
+
+        except SQLAlchemyError as e:
+            return 528, "{}".format(str(e))
+
         except BaseException as e:
             return 530, "{}".format(str(e))
 
