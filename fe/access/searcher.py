@@ -1,7 +1,7 @@
 import requests
 from urllib.parse import urljoin
 from fe.access.auth import Auth
-#import simplejson
+import json
 
 
 class Searcher:
@@ -20,15 +20,11 @@ class Searcher:
             "store_id": store_id,
             "keyword": keyword
         }
-        #print(simplejson.dumps(json))
         url = urljoin(self.url_prefix, "search")
-
         headers = {"token": self.token}
         print(url)
-        try:
-            r = requests.post(url, headers=headers, json=json)
-        except:
-            raise
+        r = requests.post(url, headers=headers, json=json)
+
         # response_json = r.json()
         # return r.status_code, response_json.get("pagenum"), response_json.get("row"), response_json.get("show")
         return r.status_code

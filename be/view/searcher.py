@@ -2,19 +2,20 @@ from flask import Blueprint
 from flask import request
 from flask import jsonify
 from be.model.searcher import Searcher
+import json
 
 bp_searcher = Blueprint("searcher", __name__, url_prefix="/searcher")
 
 
 @bp_searcher.route("/search", methods=["POST"])
 def search():
-    print("333333333333")
+    print("333333333")
     user_id: str = request.json.get("user_id")
     store_id: str = request.json.get("store_id")
     keyword: str = request.json.get("keyword")
     se = Searcher()
     code, pagenum, row, show = se.search(user_id, store_id, keyword)
-    return jsonify({"pagenum": pagenum, "row": row, "show": show}), code
+    return jsonify({"pagenum": pagenum, "row": row, "show": show}), code, "success"
 
 
 @bp_searcher.route("/show_pages", methods=["POST"])

@@ -14,7 +14,7 @@ class CheckExist:
         with self.get_session() as session:
             row = session.query(User_model.password).filter(User_model.user_id==user_id).all()
 
-            print()
+
             if len(row) == 0:
                 return False
             else:

@@ -12,24 +12,27 @@ class Searcher(db_conn.CheckExist):
     def search(self, user_id: str, store_id: str, keyword: str):
         try:
             # 全站搜索
-            if store_id == None:
+            if store_id == '':
+                print("222")
+                print(self.user_id_exist(user_id))
                 if not self.user_id_exist(user_id):
                     return error.error_non_exist_user_id(user_id)
-
+                print("333")
                 with self.get_session() as session:
+                    print("1111")
                     row = session.query(book_model.title, book_model.author, book_model.publisher,
                                         book_model.translator,
                                         book_model.pub_year, book_model.pages, book_model.price,
                                         book_model.author_intro,
                                         book_model.book_intro, book_model.tags, book_model.picture) \
                         .join(Store_model, Store_model.book_id == book_model.id) \
-                        .filter(Store_model.stock_level > 0, or_(
-                        (book_model.title__icontains, keyword), (book_model.author__icontains, keyword),
-                        (book_model.tags__icontains, keyword),
-                        (book_model.book_intro__icontains, keyword), (book_model.content__icontains, keyword)
-                    )).all()
+                        .filter(and_(Store_model.stock_level > 0, or_(
+                        book_model.title.like("%" + keyword + "%"), book_model.author.like("%" + keyword + "%"),
+                        book_model.tags.like("%" + keyword + "%"), book_model.book_intro.like("%" + keyword + "%"),
+                        book_model.content.like("%" + keyword + "%")
+                    ))).all()
 
-                    if row == None:
+                    if len(row) == 0:
                         return error.error_non_exist_search()
                     else:
                         pagenum = len(row) // 5
@@ -57,13 +60,13 @@ class Searcher(db_conn.CheckExist):
                                         book_model.author_intro,
                                         book_model.book_intro, book_model.tags, book_model.picture) \
                         .join(Store_model, Store_model.book_id == book_model.id) \
-                        .filter(Store_model.store_id == store_id, Store_model.stock_level > 0, or_(
-                        (book_model.title__icontains, keyword), (book_model.author__icontains, keyword),
-                        (book_model.tags__icontains, keyword),
-                        (book_model.book_intro__icontains, keyword), (book_model.content__icontains, keyword)
-                    )).all()
+                        .filter(and_(Store_model.store_id == store_id, Store_model.stock_level > 0, or_(
+                        book_model.title.like("%" + keyword + "%"), book_model.author.like("%" + keyword + "%"),
+                        book_model.tags.like("%" + keyword + "%"), book_model.book_intro.like("%" + keyword + "%"),
+                        book_model.content.like("%" + keyword + "%")
+                    ))).all()
 
-                    if row == None:
+                    if len(row) == 0:
                         return error.error_non_exist_search()
                     else:
                         pagenum = len(row) // 5
