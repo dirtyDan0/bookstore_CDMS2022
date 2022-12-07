@@ -8,7 +8,7 @@ from be.model.orm_models import UserStore as UserStore_model
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import and_,or_
 from datetime import datetime
-import json
+from datetime import timedelta
 
 class CJsonEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -346,7 +346,8 @@ class Buyer(db_conn.CheckExist):
 
         return 200, "ok"
 
-    # 用户查询自己所有的历史订单
+    # 用户查询自己所有的历史订单，
+    # 计算查询的时间，如果超时10s，则删去该订单
     # [{order_id,store_id,status,detail:[{book_id,count,price}]}]
     def search_order(self, user_id: str):
         try:
@@ -356,26 +357,55 @@ class Buyer(db_conn.CheckExist):
                 if len(rows) == 0:
                     return error.error_user_no_order(user_id) + ("", )
 
+            out = timedelta(seconds=5)  # 设置为5s后未支付取消
+
             with self.get_session() as session:
                 order_list = []
                 for row in rows:
                     order_id = row.order_id
                     store_id = row.store_id
-                    time = json.dumps(row.time, cls=CJsonEncoder)
                     status = row.status
+                    time = json.dumps(row.time, cls=CJsonEncoder)
 
-                    details = session.query(NewOrderDetail_model).filter(NewOrderDetail_model.order_id == order_id).all()
-                    if len(details) == 0:
-                        return error.error_invalid_order_id(order_id) + ("", )
+                    if status == "未支付":
+                        time_create = row.time  # 创建订单的时间
+                        time_now = datetime.now()  # 现在的时间
+                        time_delta = time_now - time_create  # 创建订单的时间到现在的时间差
+                        if time_delta >= out:  # 删除NewOrder,NewOrderDetail
+                            session.query(NewOrder_model).filter(NewOrder_model.order_id == order_id).delete()
+                            session.query(NewOrderDetail_model).filter(
+                                NewOrderDetail_model.order_id == order_id).delete()
+                        else:
+                            details = session.query(NewOrderDetail_model).filter(NewOrderDetail_model.order_id == order_id).all()
+                            if len(details) == 0:
+                                return error.error_invalid_order_id(order_id) + ("", )
 
-                    detail = []
-                    for item in details:
-                        book_id = item.book_id
-                        count = item.count
-                        price = item.price
-                        detail.append({'book_id':book_id, 'count':count, 'price':price})
+                            detail = []
+                            for item in details:
+                                book_id = item.book_id
+                                count = item.count
+                                price = item.price
+                                detail.append({'book_id':book_id, 'count':count, 'price':price})
 
-                    order_list.append({'order_id':order_id, 'store_id':store_id, 'time':time, 'status':status, 'detail':detail})
+                            order_list.append({'order_id':order_id, 'store_id':store_id, 'time':time, 'status':status, 'detail':detail})
+                    else:
+                        details = session.query(NewOrderDetail_model).filter(
+                            NewOrderDetail_model.order_id == order_id).all()
+                        if len(details) == 0:
+                            return error.error_invalid_order_id(order_id) + ("",)
+
+                        detail = []
+                        for item in details:
+                            book_id = item.book_id
+                            count = item.count
+                            price = item.price
+                            detail.append({'book_id': book_id, 'count': count, 'price': price})
+
+                        order_list.append({'order_id': order_id, 'store_id': store_id, 'time': time, 'status': status,
+                                           'detail': detail})
+
+                if not order_list:
+                    return error.error_user_no_order(user_id) + ("", )
 
         except SQLAlchemyError as e:
             return 528, "{}".format(str(e)), ""

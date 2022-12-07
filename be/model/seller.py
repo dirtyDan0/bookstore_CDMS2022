@@ -4,6 +4,7 @@ from be.model.orm_models import Store as Store_model,UserStore as UserStore_mode
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import and_,or_
 from datetime import datetime
+from datetime import timedelta
 import json
 
 class CJsonEncoder(json.JSONEncoder):
@@ -121,7 +122,7 @@ class Seller(db_conn.CheckExist):
                                      NewOrder_model.status, NewOrder_model.time).filter(NewOrder_model.store_id == store_id).all()
                 if len(rows) == 0:
                     return error.error_store_no_order(store_id) + ("", )
-
+            out = timedelta(seconds=5)  # 设置为5s后未支付取消
             with self.get_session() as session:
                 order_list = []
                 for row in rows:
@@ -129,19 +130,45 @@ class Seller(db_conn.CheckExist):
                     buyer_id = row.user_id
                     time = json.dumps(row.time, cls=CJsonEncoder)
                     status = row.status
+                    if status == "未支付":
+                        time_create = row.time  # 创建订单的时间
+                        time_now = datetime.now()  # 现在的时间
+                        time_delta = time_now - time_create  # 创建订单的时间到现在的时间差
+                        if time_delta >= out:  # 删除NewOrder,NewOrderDetail
+                            session.query(NewOrder_model).filter(NewOrder_model.order_id == order_id).delete()
+                            session.query(NewOrderDetail_model).filter(
+                                NewOrderDetail_model.order_id == order_id).delete()
+                        else:
+                            details = session.query(NewOrderDetail_model).filter(NewOrderDetail_model.order_id == order_id).all()
+                            if len(details) == 0:
+                                return error.error_invalid_order_id(order_id) + ("", )
 
-                    details = session.query(NewOrderDetail_model).filter(NewOrderDetail_model.order_id == order_id).all()
-                    if len(details) == 0:
-                        return error.error_invalid_order_id(order_id) + ("", )
+                            detail = []
+                            for item in details:
+                                book_id = item.book_id
+                                count = item.count
+                                price = item.price
+                                detail.append({'book_id':book_id, 'count':count, 'price':price})
 
-                    detail = []
-                    for item in details:
-                        book_id = item.book_id
-                        count = item.count
-                        price = item.price
-                        detail.append({'book_id':book_id, 'count':count, 'price':price})
+                            order_list.append({'order_id':order_id, 'user_id':buyer_id, 'time':time, 'status':status, 'detail':detail})
+                    else:
+                        details = session.query(NewOrderDetail_model).filter(
+                            NewOrderDetail_model.order_id == order_id).all()
+                        if len(details) == 0:
+                            return error.error_invalid_order_id(order_id) + ("",)
 
-                    order_list.append({'order_id':order_id, 'user_id':buyer_id, 'time':time, 'status':status, 'detail':detail})
+                        detail = []
+                        for item in details:
+                            book_id = item.book_id
+                            count = item.count
+                            price = item.price
+                            detail.append({'book_id': book_id, 'count': count, 'price': price})
+
+                        order_list.append({'order_id': order_id, 'user_id': buyer_id, 'time': time, 'status': status,
+                                           'detail': detail})
+
+                if not order_list:
+                    return error.error_store_no_order(store_id) + ("", )
 
         except SQLAlchemyError as e:
             return 528, "{}".format(str(e)), ""
