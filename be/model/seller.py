@@ -122,7 +122,7 @@ class Seller(db_conn.CheckExist):
                                      NewOrder_model.status, NewOrder_model.time).filter(NewOrder_model.store_id == store_id).all()
                 if len(rows) == 0:
                     return error.error_store_no_order(store_id) + ("", )
-            out = timedelta(seconds=5)  # 设置为5s后未支付取消
+            out = timedelta(seconds=1)  # 设置为1s后未支付取消
             with self.get_session() as session:
                 order_list = []
                 for row in rows:
@@ -145,10 +145,7 @@ class Seller(db_conn.CheckExist):
 
                             detail = []
                             for item in details:
-                                book_id = item.book_id
-                                count = item.count
-                                price = item.price
-                                detail.append({'book_id':book_id, 'count':count, 'price':price})
+                                detail.append({'book_id':item.book_id, 'count':item.count, 'price':item.price})
 
                             order_list.append({'order_id':order_id, 'user_id':buyer_id, 'time':time, 'status':status, 'detail':detail})
                     else:
@@ -159,10 +156,7 @@ class Seller(db_conn.CheckExist):
 
                         detail = []
                         for item in details:
-                            book_id = item.book_id
-                            count = item.count
-                            price = item.price
-                            detail.append({'book_id': book_id, 'count': count, 'price': price})
+                            detail.append({'book_id': item.book_id, 'count': item.count, 'price': item.price})
 
                         order_list.append({'order_id': order_id, 'user_id': buyer_id, 'time': time, 'status': status,
                                            'detail': detail})

@@ -26,7 +26,7 @@ class TestTimeOut:
         b = register_new_buyer(self.buyer_id, self.password)
         code, order_id1 = b.new_order(self.store_id, buy_book_id_list1)
         assert code == 200
-        sleep(6)
+        sleep(2)
         code, order_id2 = b.new_order(self.store_id+'_y', buy_book_id_list2)
         assert code == 200
         code, order_list = b.search_order()
@@ -40,7 +40,7 @@ class TestTimeOut:
         b = register_new_buyer(self.buyer_id, self.password)
         code, order_id1 = b.new_order(self.store_id, buy_book_id_list1)
         assert code == 200
-        sleep(6)
+        sleep(2)
         code, order_list = b.search_order()
         assert code != 200
 
@@ -52,7 +52,7 @@ class TestTimeOut:
         b = register_new_buyer(self.buyer_id, self.password)
         code, order_id1 = b.new_order(self.store_id, buy_book_id_list1)
         assert code == 200
-        sleep(6)
+        sleep(2)
         code = s.seller_search(self.store_id)
         assert code != 200
 

@@ -357,7 +357,7 @@ class Buyer(db_conn.CheckExist):
                 if len(rows) == 0:
                     return error.error_user_no_order(user_id) + ("", )
 
-            out = timedelta(seconds=5)  # 设置为5s后未支付取消
+            out = timedelta(seconds=1)  # 设置为1s后未支付取消
 
             with self.get_session() as session:
                 order_list = []
@@ -382,10 +382,7 @@ class Buyer(db_conn.CheckExist):
 
                             detail = []
                             for item in details:
-                                book_id = item.book_id
-                                count = item.count
-                                price = item.price
-                                detail.append({'book_id':book_id, 'count':count, 'price':price})
+                                detail.append({'book_id':item.book_id, 'count':item.count, 'price':item.price})
 
                             order_list.append({'order_id':order_id, 'store_id':store_id, 'time':time, 'status':status, 'detail':detail})
                     else:
@@ -396,10 +393,7 @@ class Buyer(db_conn.CheckExist):
 
                         detail = []
                         for item in details:
-                            book_id = item.book_id
-                            count = item.count
-                            price = item.price
-                            detail.append({'book_id': book_id, 'count': count, 'price': price})
+                            detail.append({'book_id': item.book_id, 'count': item.count, 'price': item.price})
 
                         order_list.append({'order_id': order_id, 'store_id': store_id, 'time': time, 'status': status,
                                            'detail': detail})
