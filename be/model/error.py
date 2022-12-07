@@ -11,9 +11,9 @@ error_code = {
     518: "invalid order id {}",
     519: "not sufficient funds, order id {}",
     520: "status not allowed, order id {}",
-    521: "",
+    521: "user have no orders, user id",
     522: "non exist query result",
-    523: "",
+    523: "store have no orders, store id {}",
     524: "",
     525: "",
     526: "",
@@ -65,9 +65,18 @@ def error_authorization_fail():
 def error_and_message(code, message):
     return code, message
 
+
 def error_non_exist_search():
     return 522, error_code[522]
+
 
 def error_status_not_allowed(order_id):
     return 520, error_code[520].format(order_id)
 
+
+def error_user_no_order(user_id):
+    return 521, error_code[521].format(user_id)
+
+
+def error_store_no_order(store_id):
+    return 523, error_code[523].format(store_id)

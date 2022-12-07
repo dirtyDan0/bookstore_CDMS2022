@@ -50,3 +50,26 @@ def delivered():
     code, message = s.delivered(user_id, order_id)
 
     return jsonify({"message": message}), code
+
+@bp_seller.route("/seller_search", methods=["POST"])
+def search_order():
+    user_id: str = request.json.get("user_id")
+    store_id: str = request.json.get("store_id")
+    s = seller.Seller()
+    code, message, rows = s.seller_search(user_id, store_id)
+    if not rows:
+        print('be: no order content !')
+        return jsonify({"message": message, "order_list": rows}), code
+    else:
+        data = []
+        for item in rows:
+            a = list(item.values())
+            d = []
+            for i in a[-1]:
+                i = list(i.values())
+                d.append(i)
+            a[-1] = d
+            data.append(a)
+
+        print('be:', data)
+        return json.dumps({"order_list": data}), code

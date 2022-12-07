@@ -2,6 +2,7 @@ from flask import Blueprint
 from flask import request
 from flask import jsonify
 from be.model.buyer import Buyer
+import json
 
 bp_buyer = Blueprint("buyer", __name__, url_prefix="/buyer")
 
@@ -41,6 +42,7 @@ def add_funds():
     code, message = b.add_funds(user_id, password, add_value)
     return jsonify({"message": message}), code
 
+
 @bp_buyer.route("/received", methods=["POST"])
 def received():
     user_id: str = request.json.get("user_id")
@@ -48,3 +50,37 @@ def received():
     b = Buyer()
     code, message = b.received(user_id, order_id)
     return jsonify({"message": message}), code
+
+
+@bp_buyer.route("/cancel_order", methods=["POST"])
+def cancel_order():
+    user_id: str = request.json.get("user_id")
+    order_id: str = request.json.get("order_id")
+    b = Buyer()
+    code, message = b.cancel_order(user_id, order_id)
+    return jsonify({"message": message}), code
+
+
+@bp_buyer.route("/search_order", methods=["POST"])
+def search_order():
+    user_id: str = request.json.get("user_id")
+    b = Buyer()
+    code, message, rows = b.search_order(user_id)
+    if not rows:
+        print('be: no order content !')
+        return jsonify({"message": message, "order_list": rows}), code
+    else:
+        data = []
+        for item in rows:
+            a = list(item.values())
+            d = []
+            for i in a[-1]:
+                i = list(i.values())
+                d.append(i)
+            a[-1] = d
+            data.append(a)
+
+        print('be:', data)
+        return json.dumps({"order_list": data}), code
+
+

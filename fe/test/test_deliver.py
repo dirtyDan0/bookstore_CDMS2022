@@ -36,6 +36,10 @@ class TestDeliver:
 
         yield
 
+    def test_error_order_id(self):
+        code = self.seller.delivered(self.order_id+'_x')
+        assert code != 200
+
     def test_error_deliver_error(self):
         code = self.seller.delivered(self.order_id)
         assert code != 200
@@ -50,5 +54,22 @@ class TestDeliver:
         assert code == 200
 
     def test_error_repeat_deliver(self):
+        code = self.buyer.add_funds(self.total_price + 100000)
+        assert code == 200
+        # 订单状态为已支付
+        code = self.buyer.payment(self.order_id)
+        assert code == 200
+        code = self.seller.delivered(self.order_id)
+        assert code == 200
+        code = self.seller.delivered(self.order_id)
+        assert code != 200
+
+    def test_error_seller_id(self):
+        code = self.buyer.add_funds(self.total_price + 100000)
+        assert code == 200
+        # 订单状态为已支付
+        code = self.buyer.payment(self.order_id)
+        assert code == 200
+        self.seller.seller_id = self.seller.seller_id + '_x'
         code = self.seller.delivered(self.order_id)
         assert code != 200

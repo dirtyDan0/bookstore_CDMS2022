@@ -3,6 +3,15 @@ from be.model import db_conn
 from be.model.orm_models import Store as Store_model,UserStore as UserStore_model,NewOrder as NewOrder_model, NewOrderDetail as NewOrderDetail_model
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import and_,or_
+from datetime import datetime
+import json
+
+class CJsonEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime):
+            return obj.strftime('%Y-%m-%d %H:%M:%S')
+        else:
+            return json.JSONEncoder.default(self, obj)
 
 class Seller(db_conn.CheckExist):
 
@@ -102,3 +111,40 @@ class Seller(db_conn.CheckExist):
         except BaseException as e:
             return 530, "{}".format(str(e))
         return 200, "ok"
+
+    # 卖家查询商店的订单信息
+    # [{order_id,user_id,status,time,detail:{book_id,count,price}}]
+    def seller_search(self, user_id: str, store_id: str):
+        try:
+            with self.get_session() as session:
+                rows = session.query(NewOrder_model.order_id, NewOrder_model.user_id,
+                                     NewOrder_model.status, NewOrder_model.time).filter(NewOrder_model.store_id == store_id).all()
+                if len(rows) == 0:
+                    return error.error_store_no_order(store_id) + ("", )
+
+            with self.get_session() as session:
+                order_list = []
+                for row in rows:
+                    order_id = row.order_id
+                    buyer_id = row.user_id
+                    time = json.dumps(row.time, cls=CJsonEncoder)
+                    status = row.status
+
+                    details = session.query(NewOrderDetail_model).filter(NewOrderDetail_model.order_id == order_id).all()
+                    if len(details) == 0:
+                        return error.error_invalid_order_id(order_id) + ("", )
+
+                    detail = []
+                    for item in details:
+                        book_id = item.book_id
+                        count = item.count
+                        price = item.price
+                        detail.append({'book_id':book_id, 'count':count, 'price':price})
+
+                    order_list.append({'order_id':order_id, 'user_id':buyer_id, 'time':time, 'status':status, 'detail':detail})
+
+        except SQLAlchemyError as e:
+            return 528, "{}".format(str(e)), ""
+        except BaseException as e:
+            return 530, "{}".format(str(e)), ""
+        return 200, "ok", order_list

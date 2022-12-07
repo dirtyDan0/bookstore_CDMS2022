@@ -8,6 +8,14 @@ from be.model.orm_models import UserStore as UserStore_model
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import and_,or_
 from datetime import datetime
+import json
+
+class CJsonEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime):
+            return obj.strftime('%Y-%m-%d %H:%M:%S')
+        else:
+            return json.JSONEncoder.default(self, obj)
 
 class Buyer(db_conn.CheckExist):
 
@@ -249,3 +257,128 @@ class Buyer(db_conn.CheckExist):
             return 530, "{}".format(str(e))
 
         return 200, "ok"
+
+    # 取消订单功能（用户主动，未实现超时取消）
+    def cancel_order(self, user_id: str, order_id: str) -> (int, str):
+        try:
+            row = None
+            with self.get_session() as session:
+                row = session.query(NewOrder_model.order_id, NewOrder_model.user_id,
+                                    NewOrder_model.store_id, NewOrder_model.status).filter(NewOrder_model.order_id == order_id).all()
+
+                if len(row) != 1:
+                    return error.error_invalid_order_id(order_id)
+
+            row = row[0]
+            buyer_id = row.user_id
+            store_id = row.store_id
+            status = row.status
+
+            if not self.store_id_exist(store_id):
+                return error.error_non_exist_store_id(store_id)
+            if status == "已发货" or status == "已收货":
+                return error.error_status_not_allowed(order_id)  # 已发货/已收货的订单不能取消
+            if user_id != buyer_id:
+                return error.error_authorization_fail()
+
+            # 放在一个session里，可以rollback
+            # 执行cancel(两种status，分情况: 已支付的订单要多增加 更改卖家和买家的余额变动，其他一样)
+            with self.get_session() as session:
+                details = session.query(NewOrderDetail_model.order_id, NewOrderDetail_model.book_id
+                                       , NewOrderDetail_model.count, NewOrderDetail_model.price).filter(NewOrderDetail_model.order_id == order_id).all()
+                if len(details) == 0:
+                    return error.error_invalid_order_id(order_id)
+
+                # 在仓库添加书的数量,同时计算获得total_price
+                total_price = 0
+                for detail in details:
+                    book_id = detail.book_id
+                    count = detail.count
+                    price = detail.price
+                    total_price += count * price
+
+                    stock = session.query(Store_model).filter(and_(Store_model.store_id == store_id, Store_model.book_id == book_id)).all()
+                    if len(stock) != 1:
+                        return error.error_non_exist_book_id(book_id)
+                    stock = stock[0]
+                    stock.stock_level = stock.stock_level + count
+                    session.add(stock)
+
+                # 卖家扣钱。买家加钱
+                if status == "已支付":
+                    # 获取卖家id
+                    seller = session.query(UserStore_model.user_id).filter(UserStore_model.store_id == store_id).all()
+                    if len(seller) != 1:
+                        return error.error_exist_store_id(store_id)
+                    seller_id = seller[0].user_id
+                    # 检查卖家是否有足够的余额被扣去
+                    seller = session.query(User_model).filter(
+                        and_(User_model.user_id == seller_id, User_model.balance >= total_price)).all()
+                    if len(seller) != 1:
+                        return error.error_not_sufficient_funds(order_id)
+                    seller = seller[0]
+                    seller.balance = seller.balance - total_price
+                    session.add(seller)
+
+                    buyer = session.query(User_model).filter(User_model.user_id == buyer_id).all()
+                    if len(buyer) != 1:
+                        return error.error_non_exist_user_id(buyer_id)
+                    buyer = buyer[0]
+                    buyer.balance = buyer.balance + total_price
+                    session.add(buyer)
+
+                # 删除new_order, new_order_detail
+                new_order = session.query(NewOrder_model).filter(NewOrder_model.order_id==order_id).all()
+                if len(new_order) !=1:
+                    return error.error_invalid_order_id(order_id)
+                session.query(NewOrder_model).filter(NewOrder_model.order_id==order_id).delete()
+
+                new_order = session.query(NewOrderDetail_model).filter(NewOrderDetail_model.order_id==order_id).all()
+                if len(new_order) ==0:
+                    return error.error_invalid_order_id(order_id)
+                session.query(NewOrderDetail_model).filter(NewOrderDetail_model.order_id==order_id).delete()
+
+        except SQLAlchemyError as e:
+            return 528, "{}".format(str(e))
+
+        except BaseException as e:
+            return 530, "{}".format(str(e))
+
+        return 200, "ok"
+
+    # 用户查询自己所有的历史订单
+    # [{order_id,store_id,status,detail:[{book_id,count,price}]}]
+    def search_order(self, user_id: str):
+        try:
+            with self.get_session() as session:
+                rows = session.query(NewOrder_model.order_id, NewOrder_model.store_id,
+                                     NewOrder_model.status, NewOrder_model.time).filter(NewOrder_model.user_id == user_id).all()
+                if len(rows) == 0:
+                    return error.error_user_no_order(user_id) + ("", )
+
+            with self.get_session() as session:
+                order_list = []
+                for row in rows:
+                    order_id = row.order_id
+                    store_id = row.store_id
+                    time = json.dumps(row.time, cls=CJsonEncoder)
+                    status = row.status
+
+                    details = session.query(NewOrderDetail_model).filter(NewOrderDetail_model.order_id == order_id).all()
+                    if len(details) == 0:
+                        return error.error_invalid_order_id(order_id) + ("", )
+
+                    detail = []
+                    for item in details:
+                        book_id = item.book_id
+                        count = item.count
+                        price = item.price
+                        detail.append({'book_id':book_id, 'count':count, 'price':price})
+
+                    order_list.append({'order_id':order_id, 'store_id':store_id, 'time':time, 'status':status, 'detail':detail})
+
+        except SQLAlchemyError as e:
+            return 528, "{}".format(str(e)), ""
+        except BaseException as e:
+            return 530, "{}".format(str(e)), ""
+        return 200, "ok", order_list
