@@ -9,3 +9,5 @@ __pycache__/
 not_upload/
 bookstore.db
 /data/bookstore.db
+/data/bookstore_backup.db
+wlm_requirements.txt
