@@ -1,6 +1,8 @@
 from sqlalchemy import text, Index, Column, Integer, Text, LargeBinary, DateTime
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.sql import func
+from sqlalchemy.dialects.postgresql import TSVECTOR
+
 
 Base = declarative_base()
 """
@@ -28,6 +30,7 @@ class Book(Base):
     content = Column(Text)
     tags = Column(Text)
     picture = Column(LargeBinary)
+    token = Column(TSVECTOR)
 """
     __table_args__ = (
         Index(
