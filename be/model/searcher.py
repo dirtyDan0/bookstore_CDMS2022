@@ -44,21 +44,7 @@ class Searcher(db_conn.CheckExist):
                         .filter(book_model.title == sub.c.title) \
                         .order_by(desc(sub.c.score)) \
                         .all()
-
-                    if len(row) == 0:
-                        return error.error_non_exist_search()
-                    else:
-                        pagenum = len(row) // 5
-                        if pagenum == 0 :
-                            pagenum = 1
-                            show = row
-                        else:
-                            page = len(row) % 5
-                            if page != 0:
-                                pagenum += 1
-                            show = row[:5]
-                        # return 200, "ok", pagenum, row, show
-            # 店铺搜索
+            # 店铺内搜索
             else:
                 if not self.store_id_exist(store_id):
                     return error.error_non_exist_store_id(store_id)
@@ -91,20 +77,19 @@ class Searcher(db_conn.CheckExist):
                         .order_by(desc(sub.c.score)) \
                         .all()
 
-                    if len(row) == 0:
-                        return error.error_non_exist_search()
-                    else:
-                        pagenum = len(row) // 5
-                        if pagenum == 0:
-                            pagenum = 1
-                            show = row
-                        else:
-                            page = len(row) % 5
-                            if page != 0:
-                                pagenum += 1
-                            show = row[:5]
-                        #print(pagenum, row, show)
-                        # return 200, "ok", pagenum, row, show
+            # 计算得到总页数（5条一页）和第一页展示内容
+            if len(row) == 0:
+                return error.error_non_exist_search()
+            else:
+                pagenum = len(row) // 5
+                if pagenum == 0:
+                    pagenum = 1
+                    show = row
+                else:
+                    page = len(row) % 5
+                    if page != 0:
+                        pagenum += 1
+                    show = row[:5]
 
         except SQLAlchemyError as e:
             return 528, "{}".format(str(e))
@@ -123,7 +108,6 @@ class Searcher(db_conn.CheckExist):
                 show = content[off:(off+5)]
             else:
                 show = content[off:]
-            # return 200, "ok", show, content
 
         except SQLAlchemyError as e:
             return 528, "{}".format(str(e))
