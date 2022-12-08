@@ -4,6 +4,14 @@
 
 卖家权限接口： delivered
 
+实现逻辑和数据库操作：  
+传入卖家id和订单id  
+检查订单是否存在：用order_id查询NewOrder表
+是否属于该卖家：用user_id查询UserStore表  
+检查订单状态：用order_id查询NewOrder表获取status  
+如果订单状态为已支付，则将NewOrder表中该记录的status修改为已发货  
+其他状态不允许修改订单状态为已发货。  
+
 **请求地址：**
 POST http://[address]/seller/delivered
 
@@ -42,6 +50,14 @@ order_id错误/未支付订单/重复发货/卖家id错误
 
 买家权限接口： received
 
+实现逻辑和数据库操作：  
+传入买家id和订单id  
+检查订单是否存在：用order_id查询NewOrder表  
+是否属于该买家：用user_id查询UserStore表  
+检查订单状态：用order_id查询NewOrder表获取status  
+如果订单状态为已发货，则将NewOrder表中该记录的status修改为已收货  
+其他状态不允许修改订单状态为已收货。  
+
 **请求地址：**
 POST http://[address]/buyer/received
 
@@ -76,12 +92,20 @@ Status Code:
 
 ### 订单状态
 在NewOrder表增加status，该属性存储订单的状态，分为：  
+
 未支付 -> 已支付 -> 已发货 -> 已收货  
 
 ### 订单查询
 
 **买家查询自己所有的历史订单信息**  
 买家权限接口：search_order  
+
+实现逻辑和数据库操作：  
+传入买家id  
+检查该用户是否有订单：用user_id查询NewOrder表获取订单列表信息    
+用查询到的order_id查询NewOrderDetail表获取订单具体信息
+检查查询的detail是否为空，空则返回订单错误  
+将订单和订单具体信息返回。    
 
 **请求地址：**
 POST http://[address]/buyer/search_order
@@ -144,6 +168,13 @@ Status Code:
 买家id错误/订单没有内容
 
 **卖家查询自己商店的所有订单**
+
+实现逻辑和数据库操作：  
+传入卖家id和商店id  
+检查该商店是否有订单，用store_id查询NewOrder表获取订单列表信息    
+用查询到的order_id查询NewOrderDetail表获取订单具体信息  
+检查查询的detail是否为空，空则返回订单错误  
+将订单和订单具体信息返回。  
 
 卖家权限接口：seller_search
 
@@ -213,13 +244,14 @@ Status Code:
 取消订单的步骤：
 
 1. 主动取消
-取消订单接口：  
-前提（status 不是已收货/已发货）   
-If 未支付  
-只需要修改仓库信息  
+取消订单接口：获取买家id和订单id  
+用order_id查询NewOrder表获取订单信息  
+检查商店id是否存在，status 不是已收货/已发货，用户id是买家id  
+If 订单状态是未支付  
+只需要修改仓库信息，order_id查询NewOrderDetail表获取订单购买的具体信息，更新相应store里的库存信息。
 If 已支付  
-需要修改仓库信息/余额变动  
-删除new_order/new_order_detail  
+需要修改仓库信息/余额变动，计算总金额，查询User表里商家id的记录判断商家的钱够不够扣除，够则扣除订单金额，在买家金额里加上相同金额。    
+最后都要删除new_order/new_order_detail里的该订单记录    
 2. 超时取消
 超过一定时间未支付，自动取消  
 每次查询，如果计算时间（当前时间 - 订单创建时间）>= 1s 删除订单  
