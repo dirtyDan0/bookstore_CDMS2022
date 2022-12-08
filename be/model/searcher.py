@@ -8,14 +8,13 @@ from sqlalchemy.sql import func
 
 class Searcher(db_conn.CheckExist):
 
-
     def search(self, user_id: str, store_id: str, keyword: str):
         try:
+            if not self.user_id_exist(user_id):
+                return error.error_non_exist_user_id(user_id)
+
             # 全站搜索
             if store_id == '':
-                if not self.user_id_exist(user_id):
-                    return error.error_non_exist_user_id(user_id)
-
                 with self.get_session() as session:
                     #一般模糊查询
                     """
@@ -61,8 +60,6 @@ class Searcher(db_conn.CheckExist):
                         # return 200, "ok", pagenum, row, show
             # 店铺搜索
             else:
-                if not self.user_id_exist(user_id):
-                    return error.error_non_exist_user_id(user_id)
                 if not self.store_id_exist(store_id):
                     return error.error_non_exist_store_id(store_id)
 
