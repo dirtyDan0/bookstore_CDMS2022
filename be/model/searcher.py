@@ -3,12 +3,12 @@ from be.model import db_conn
 from be.model.orm_models import Store as Store_model
 from be.model.orm_models import Book as book_model
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy import and_, or_
-
+from sqlalchemy import desc
+from sqlalchemy.sql import func
 
 class Searcher(db_conn.CheckExist):
 
-    # 题目，作者，出版商，翻译，出版日期，页数，价格，标签，简介，目录
+
     def search(self, user_id: str, store_id: str, keyword: str):
         try:
             # 全站搜索
@@ -17,10 +17,10 @@ class Searcher(db_conn.CheckExist):
                     return error.error_non_exist_user_id(user_id)
 
                 with self.get_session() as session:
-
+                    #一般模糊查询
+                    """
                     row = session.query(book_model.title, book_model.author, book_model.publisher,
                                         book_model.translator,
-                                        book_model.pub_year, book_model.pages, book_model.price,
                                         book_model.author_intro,
                                         book_model.book_intro, book_model.tags) \
                         .join(Store_model, Store_model.book_id == book_model.id) \
@@ -29,6 +29,22 @@ class Searcher(db_conn.CheckExist):
                         book_model.tags.like("%" + keyword + "%"), book_model.book_intro.like("%" + keyword + "%"),
                         book_model.content.like("%" + keyword + "%")
                     ))).all()
+                    """
+                    #gin索引查询
+                    sub = session.query(book_model.title,
+                                        func.ts_rank(book_model.token, func.to_tsquery('simple', keyword)).label('score')) \
+                        .filter(book_model.token.op('@@')(func.to_tsquery('simple', keyword))) \
+                        .subquery()
+
+                    row = session.query(book_model.title, book_model.author, book_model.publisher,
+                                        book_model.translator,
+                                        book_model.author_intro,
+                                        book_model.book_intro, book_model.tags) \
+                        .join(Store_model, Store_model.book_id == book_model.id) \
+                        .filter(Store_model.stock_level > 0) \
+                        .filter(book_model.title == sub.c.title) \
+                        .order_by(desc(sub.c.score)) \
+                        .all()
 
                     if len(row) == 0:
                         return error.error_non_exist_search()
@@ -51,9 +67,9 @@ class Searcher(db_conn.CheckExist):
                     return error.error_non_exist_store_id(store_id)
 
                 with self.get_session() as session:
+                    """
                     row = session.query(book_model.title, book_model.author, book_model.publisher,
                                         book_model.translator,
-                                        book_model.pub_year, book_model.pages, book_model.price,
                                         book_model.author_intro,
                                         book_model.book_intro, book_model.tags) \
                         .join(Store_model, Store_model.book_id == book_model.id) \
@@ -62,6 +78,21 @@ class Searcher(db_conn.CheckExist):
                         book_model.tags.like("%" + keyword + "%"), book_model.book_intro.like("%" + keyword + "%"),
                         book_model.content.like("%" + keyword + "%")
                     ))).all()
+                    """
+                    sub = session.query(book_model.title,
+                                        func.ts_rank(book_model.token, func.to_tsquery('simple', keyword)).label('score')) \
+                        .filter(book_model.token.op('@@')(func.to_tsquery('simple', keyword))) \
+                        .subquery()
+
+                    row = session.query(book_model.title, book_model.author, book_model.publisher,
+                                        book_model.translator,
+                                        book_model.author_intro,
+                                        book_model.book_intro, book_model.tags) \
+                        .join(Store_model, Store_model.book_id == book_model.id) \
+                        .filter(Store_model.stock_level > 0) \
+                        .filter(book_model.title == sub.c.title) \
+                        .order_by(desc(sub.c.score)) \
+                        .all()
 
                     if len(row) == 0:
                         return error.error_non_exist_search()
@@ -89,7 +120,7 @@ class Searcher(db_conn.CheckExist):
             if not self.user_id_exist(user_id):
                 return error.error_non_exist_user_id(user_id)
 
-            off = (page-1) * 5
+            off = (int(page)-1) * 5
             remain = len(content) - off
             if remain > 5:
                 show = content[off:(off+5)]

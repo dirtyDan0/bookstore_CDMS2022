@@ -16,10 +16,8 @@ def search():
     va: bool = request.json.get("variable")
 
     se = Searcher()
-    #print(se.search(user_id, store_id, keyword))
     if va:
         code, message, pagenum, row, show = se.search(user_id, store_id, keyword)
-        #print(code)
         data1 = []
         for item in row:
             data1.append(list(item))
@@ -34,10 +32,10 @@ def search():
 @bp_searcher.route("/show_pages", methods=["POST"])
 def show_pages():
     user_id: str = request.json.get("user_id")
-    page: int = request.json.get("page")
+    page: str = request.json.get("page")
     content: str = request.json.get("content")
     va: bool = request.json.get("variable")
-    print(va)
+
     se = Searcher()
     if va:
         code, message, show, row = se.show_pages(user_id, page, content)

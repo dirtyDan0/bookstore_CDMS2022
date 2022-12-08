@@ -2,6 +2,7 @@ import requests
 from urllib.parse import urljoin
 from fe.access.auth import Auth
 import json
+import jieba
 
 
 class Searcher:
@@ -15,26 +16,23 @@ class Searcher:
         assert code == 200
 
     def search(self, store_id: str, keyword: str, va: bool):
+        #分词
+        kw = ' | '.join(jieba.cut(keyword, cut_all=False))
+
         json = {
             "user_id": self.user_id,
             "store_id": store_id,
-            "keyword": keyword,
+            "keyword": kw,
             "variable": va
         }
         url = urljoin(self.url_prefix, "search")
-        headers = {"token": self.token, "Content-Type": "application/json"}
+        headers = {"token": self.token}
 
-        #json_str = json.dumps(json_)
-        #print(json_str)
-        #print(url)
         r = requests.post(url, headers=headers, json=json)
         response_json = r.json()
         if va:
             return r.status_code, response_json.get("pagenum"), response_json.get("row"), response_json.get("show")
-        #print(r)
-        #return r.status_code
         else:
-            print(r)
             return r.status_code
 
 

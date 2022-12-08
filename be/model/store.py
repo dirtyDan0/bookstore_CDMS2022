@@ -14,10 +14,10 @@ class Store:
     #database: str
 
     def __init__(self):
-        self.database = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data/bookstore.db")
+        #self.database = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data/bookstore.db")
         # 最后我们只要换掉这个db_address就可以换成psql
-        self.engine = create_engine("sqlite:///"+self.database)
-        '''
+        #self.engine = create_engine("sqlite:///"+self.database)
+
         self.engine = create_engine("postgresql+psycopg2://stu10205501460:Stu10205501460@dase-cdms-2022-pub.pg.rds.aliyuncs.com:5432/stu10205501460",
         max_overflow=0,
         # 链接池大小
@@ -29,7 +29,7 @@ class Store:
         # 查看原生语句（未格式化）
         echo=True
         )
-        '''
+
         
         #self.engine = create_engine("postgresql+psycopg2://postgres:123456@localhost:5432/postgres",echo=True)
         self.DBSession = sessionmaker(bind=self.engine)

@@ -14,21 +14,23 @@ class TestSearch:
         self.searcher = register_new_searcher(self.searcher_id, self.password)
 
         self.store_id1 = "test_search_store_id_{}".format(str(uuid.uuid1())) #店铺内
-        #self.store_id1 = "test_search_store_id_a6493f19-7565-11ed-a111-f8ac65b9cbec"
+        #self.store_id1 = 'test_search_store_id_4886fd75-761c-11ed-8bc4-145afc1fa211'
         self.store_id0 = "" #全站
         self.add1 = AddStoreBook(self.store_id1) #店铺内
         self.add0 = AddStoreBook(self.store_id0) #全站
 
-        self.keyword = "人"
+        self.keyword1 = "美丽人生"
+        self.keyword0 = "繺"
         self.page = 0
 
         yield
 
     def test_store_ok(self):
+
         ok = self.add1.add()
         assert ok
-        code1,pagenum,row,_ = self.searcher.search(self.store_id1, self.keyword, True)
-        #code1 = self.searcher.search(store_id=self.store_id1, keyword=self.keyword)
+
+        code1,pagenum,row,_ = self.searcher.search(self.store_id1, self.keyword1, True)
         assert code1 == 200
 
         if pagenum > 1:
@@ -37,9 +39,11 @@ class TestSearch:
             assert code2 == 200
 
     def test_all_ok(self):
+
         ok = self.add0.add()
         assert ok
-        code1, pagenum, row, _ = self.searcher.search(self.store_id0, self.keyword, True)
+
+        code1, pagenum, row, _ = self.searcher.search(self.store_id0, self.keyword1, True)
         assert code1 == 200
 
         if pagenum > 1:
@@ -48,20 +52,26 @@ class TestSearch:
             assert code2 == 200
 
     def test_error_non_exist_search(self):
+
         ok = self.add0.add()
         assert ok
-        code = self.searcher.search(self.store_id1, self.keyword+"xx", False)
+
+        code = self.searcher.search(self.store_id1, self.keyword0, False)
         assert code != 200
 
     def test_non_exist_user_id(self):
+
         ok = self.add0.add()
         assert ok
+
         self.searcher.user_id = self.searcher.user_id + "_x"
-        code = self.searcher.search(self.store_id1, self.keyword, False)
+        code = self.searcher.search(self.store_id1, self.keyword1, False)
         assert code != 200
 
     def test_non_exist_store_id(self):
+
         ok = self.add0.add()
         assert ok
-        code = self.searcher.search(self.store_id1+"x", self.keyword ,False)
+
+        code = self.searcher.search(self.store_id1+"x", self.keyword1 ,False)
         assert code != 200
