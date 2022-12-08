@@ -24,7 +24,7 @@ def search():
         data2 = []
         for item in show:
             data2.append(list(item))
-        return json.dumps({"pagenum": pagenum, "row": data1, "show": data2}), code
+        return json.dumps({"message":message, "pagenum": pagenum, "row": data1, "show": data2}), code
     else:
         code, message = se.search(user_id, store_id, keyword)
         return jsonify({"message": message}), code
@@ -45,7 +45,7 @@ def show_pages():
         data2 = []
         for item in show:
             data2.append(list(item))
-        return jsonify({"show": data2, "row": data1}), code
+        return jsonify({"message":message, "show": data2, "row": data1}), code
     else:
         code, message = se.search(user_id, page, content)
         return jsonify({"message": message}), code
