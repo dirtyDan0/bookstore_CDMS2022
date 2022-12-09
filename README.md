@@ -1332,7 +1332,7 @@ TOTAL                              2219    136    556     62    91%
 >
 >我们使用`git`进行版本管理，并在`github`上建立仓库以托管代码。
 >
-><img src="D:\Coding_Documents\class_practice\db\pj2\bookstore_CDMS2022\markdown\main.assets\网页捕获_9-12-2022_162745_github.com.jpeg" alt="网页捕获_9-12-2022_162745_github.com" style="zoom:25%;" />
+><img src="./markdown/main.assets/网页捕获_9-12-2022_162745_github.com.jpeg" alt="网页捕获_9-12-2022_162745_github.com" style="zoom:25%;" />
 >
 >**demo的错误指正**
 >
