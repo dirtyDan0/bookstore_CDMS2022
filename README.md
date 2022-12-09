@@ -10,7 +10,7 @@
 
 ## 关系数据库设计
 
-### ER图![er](D:\Coding_Documents\class_practice\db\pj2\bookstore_CDMS2022\markdown\main.assets\er.png)
+### ER图![er](./markdown/main.assets/er.png)
 
 
 
