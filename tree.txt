@@ -1,0 +1,39 @@
+卷 Data 的文件夹 PATH 列表
+卷序列号为 4EA3-3802
+D:.
+│  .gitignore
+│  jieba_book.py
+│  log.txt
+│  README.md
+│  requirements.txt
+│  
+├─be
+│  │  app.py
+│  │  serve.py
+│  │  __init__.py
+│  │  
+│  ├─model
+│  │      
+│  └─view
+│          
+├─fe
+│  │  conf.py
+│  │  conftest.py
+│  │  __init__.py
+│  │  
+│  ├─access
+│  │      
+│  ├─bench
+│  │      
+│  └─test
+│          
+├─markdown
+│          
+├─script
+│      test.sh
+│      
+└─test_result
+    │  .coverage
+    │  res.txt
+    │  
+    └─htmlcov

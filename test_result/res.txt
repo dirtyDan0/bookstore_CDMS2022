@@ -1,0 +1,169 @@
+============================= test session starts =============================
+platform win32 -- Python 3.10.8, pytest-7.1.2, pluggy-1.0.0 -- D:\ProgramData\Anaconda3\envs\db_bookstore\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Coding_Documents\class_practice\db\pj2\bookstore_CDMS2022
+collecting ... frontend begin test
+2022-12-09 15:20:58,376 INFO sqlalchemy.engine.Engine select pg_catalog.version()
+2022-12-09 15:20:58,376 INFO sqlalchemy.engine.Engine [raw sql] {}
+2022-12-09 15:20:58,389 INFO sqlalchemy.engine.Engine select current_schema()
+2022-12-09 15:20:58,390 INFO sqlalchemy.engine.Engine [raw sql] {}
+2022-12-09 15:20:58,394 INFO sqlalchemy.engine.Engine show standard_conforming_strings
+2022-12-09 15:20:58,395 INFO sqlalchemy.engine.Engine [raw sql] {}
+2022-12-09 15:20:58,401 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2022-12-09 15:20:58,405 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%(name)s
+2022-12-09 15:20:58,406 INFO sqlalchemy.engine.Engine [generated in 0.00154s] {'name': 'bookstore_book'}
+2022-12-09 15:20:58,412 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%(name)s
+2022-12-09 15:20:58,413 INFO sqlalchemy.engine.Engine [cached since 0.009347s ago] {'name': 'bookstore_new_order'}
+2022-12-09 15:20:58,417 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%(name)s
+2022-12-09 15:20:58,417 INFO sqlalchemy.engine.Engine [cached since 0.0134s ago] {'name': 'bookstore_new_order_detail'}
+2022-12-09 15:20:58,420 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%(name)s
+2022-12-09 15:20:58,421 INFO sqlalchemy.engine.Engine [cached since 0.01722s ago] {'name': 'bookstore_store'}
+2022-12-09 15:20:58,425 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%(name)s
+2022-12-09 15:20:58,425 INFO sqlalchemy.engine.Engine [cached since 0.02165s ago] {'name': 'bookstore_user'}
+2022-12-09 15:20:58,429 INFO sqlalchemy.engine.Engine select relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where pg_catalog.pg_table_is_visible(c.oid) and relname=%(name)s
+2022-12-09 15:20:58,430 INFO sqlalchemy.engine.Engine [cached since 0.02605s ago] {'name': 'bookstore_user_store'}
+2022-12-09 15:20:58,433 INFO sqlalchemy.engine.Engine COMMIT
+ * Serving Flask app 'be.serve' (lazy loading)
+ * Environment: production
+   WARNING: This is a development server. Do not use it in a production deployment.
+   Use a production WSGI server instead.
+ * Debug mode: off
+collected 65 items
+
+fe/test/test_add_book.py::TestAddBook::test_ok PASSED                    [  1%]
+fe/test/test_add_book.py::TestAddBook::test_error_non_exist_store_id PASSED [  3%]
+fe/test/test_add_book.py::TestAddBook::test_error_exist_book_id PASSED   [  4%]
+fe/test/test_add_book.py::TestAddBook::test_error_non_exist_user_id PASSED [  6%]
+fe/test/test_add_funds.py::TestAddFunds::test_ok PASSED                  [  7%]
+fe/test/test_add_funds.py::TestAddFunds::test_error_user_id PASSED       [  9%]
+fe/test/test_add_funds.py::TestAddFunds::test_error_password PASSED      [ 10%]
+fe/test/test_add_stock_level.py::TestAddStockLevel::test_error_user_id PASSED [ 12%]
+fe/test/test_add_stock_level.py::TestAddStockLevel::test_error_store_id PASSED [ 13%]
+fe/test/test_add_stock_level.py::TestAddStockLevel::test_error_book_id PASSED [ 15%]
+fe/test/test_add_stock_level.py::TestAddStockLevel::test_ok PASSED       [ 16%]
+fe/test/test_bench.py::test_bench PASSED                                 [ 18%]
+fe/test/test_cancel_order.py::TestCancelOrder::test_unpaid_ok PASSED     [ 20%]
+fe/test/test_cancel_order.py::TestCancelOrder::test_paid_ok PASSED       [ 21%]
+fe/test/test_cancel_order.py::TestCancelOrder::test_error_delivered_received PASSED [ 23%]
+fe/test/test_cancel_order.py::TestCancelOrder::test_error_order PASSED   [ 24%]
+fe/test/test_cancel_order.py::TestCancelOrder::test_error_repeat PASSED  [ 26%]
+fe/test/test_cancel_order.py::TestCancelOrder::test_error_user_id PASSED [ 27%]
+fe/test/test_cancel_order.py::TestCancelOrder::test_error_seller_no_funds PASSED [ 29%]
+fe/test/test_create_store.py::TestCreateStore::test_ok PASSED            [ 30%]
+fe/test/test_create_store.py::TestCreateStore::test_error_exist_store_id PASSED [ 32%]
+fe/test/test_deliver.py::TestDeliver::test_error_order_id PASSED         [ 33%]
+fe/test/test_deliver.py::TestDeliver::test_error_deliver_error PASSED    [ 35%]
+fe/test/test_deliver.py::TestDeliver::test_ok PASSED                     [ 36%]
+fe/test/test_deliver.py::TestDeliver::test_error_repeat_deliver PASSED   [ 38%]
+fe/test/test_deliver.py::TestDeliver::test_error_seller_id PASSED        [ 40%]
+fe/test/test_login.py::TestLogin::test_ok PASSED                         [ 41%]
+fe/test/test_login.py::TestLogin::test_error_user_id PASSED              [ 43%]
+fe/test/test_login.py::TestLogin::test_error_password PASSED             [ 44%]
+fe/test/test_new_order.py::TestNewOrder::test_non_exist_book_id PASSED   [ 46%]
+fe/test/test_new_order.py::TestNewOrder::test_low_stock_level PASSED     [ 47%]
+fe/test/test_new_order.py::TestNewOrder::test_ok PASSED                  [ 49%]
+fe/test/test_new_order.py::TestNewOrder::test_non_exist_user_id PASSED   [ 50%]
+fe/test/test_new_order.py::TestNewOrder::test_non_exist_store_id PASSED  [ 52%]
+fe/test/test_password.py::TestPassword::test_ok PASSED                   [ 53%]
+fe/test/test_password.py::TestPassword::test_error_password PASSED       [ 55%]
+fe/test/test_password.py::TestPassword::test_error_user_id PASSED        [ 56%]
+fe/test/test_payment.py::TestPayment::test_ok PASSED                     [ 58%]
+fe/test/test_payment.py::TestPayment::test_authorization_error PASSED    [ 60%]
+fe/test/test_payment.py::TestPayment::test_not_suff_funds PASSED         [ 61%]
+fe/test/test_payment.py::TestPayment::test_repeat_pay PASSED             [ 63%]
+fe/test/test_receive.py::TestReceive::test_error_status_unpaid PASSED    [ 64%]
+fe/test/test_receive.py::TestReceive::test_error_status_undelivered PASSED [ 66%]
+fe/test/test_receive.py::TestReceive::test_ok PASSED                     [ 67%]
+fe/test/test_receive.py::TestReceive::test_error_no_order PASSED         [ 69%]
+fe/test/test_receive.py::TestReceive::test_error_repeat_receive PASSED   [ 70%]
+fe/test/test_receive.py::TestReceive::test_error_user_id PASSED          [ 72%]
+fe/test/test_register.py::TestRegister::test_register_ok PASSED          [ 73%]
+fe/test/test_register.py::TestRegister::test_unregister_ok PASSED        [ 75%]
+fe/test/test_register.py::TestRegister::test_unregister_error_authorization PASSED [ 76%]
+fe/test/test_register.py::TestRegister::test_register_error_exist_user_id PASSED [ 78%]
+fe/test/test_search.py::TestSearch::test_store_ok PASSED                 [ 80%]
+fe/test/test_search.py::TestSearch::test_all_ok PASSED                   [ 81%]
+fe/test/test_search.py::TestSearch::test_error_non_exist_search PASSED   [ 83%]
+fe/test/test_search.py::TestSearch::test_non_exist_user_id PASSED        [ 84%]
+fe/test/test_search.py::TestSearch::test_non_exist_store_id PASSED       [ 86%]
+fe/test/test_search_order.py::TestSearchOrder::test_buyer_search PASSED  [ 87%]
+fe/test/test_search_order.py::TestSearchOrder::test_error_no_order PASSED [ 89%]
+fe/test/test_search_order.py::TestSearchOrder::test_error_no_detail PASSED [ 90%]
+fe/test/test_seller_search.py::TestSellerSearch::test_seller_search PASSED [ 92%]
+fe/test/test_seller_search.py::TestSellerSearch::test_error_no_order PASSED [ 93%]
+fe/test/test_seller_search.py::TestSellerSearch::test_error_no_detail PASSED [ 95%]
+fe/test/test_timeout_cancel.py::TestTimeOut::test_timeout_cancel_buyer PASSED [ 96%]
+fe/test/test_timeout_cancel.py::TestTimeOut::test_timeout_no_order_buyer PASSED [ 98%]
+fe/test/test_timeout_cancel.py::TestTimeOut::test_timeout_cancel_seller PASSED [100%]
+
+============================== warnings summary ===============================
+..\..\..\..\..\ProgramData\Anaconda3\envs\db_bookstore\lib\site-packages\win32\lib\pywintypes.py:51
+..\..\..\..\..\ProgramData\Anaconda3\envs\db_bookstore\lib\site-packages\win32\lib\pywintypes.py:51
+  D:\ProgramData\Anaconda3\envs\db_bookstore\lib\site-packages\win32\lib\pywintypes.py:51: DeprecationWarning: getargs: The 'u' format is deprecated. Use 'U' instead.
+    found = _win32sysloader.GetModuleFilename(filename)
+
+..\..\..\..\..\ProgramData\Anaconda3\envs\db_bookstore\lib\site-packages\win32\lib\pywintypes.py:65
+  D:\ProgramData\Anaconda3\envs\db_bookstore\lib\site-packages\win32\lib\pywintypes.py:65: DeprecationWarning: getargs: The 'u' format is deprecated. Use 'U' instead.
+    found = _win32sysloader.LoadModule(filename)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================= 65 passed, 3 warnings in 1705.59s (0:28:25) =================
+frontend end test
+No data to combine
+Name                              Stmts   Miss Branch BrPart  Cover
+-------------------------------------------------------------------
+be\__init__.py                        0      0      0      0   100%
+be\app.py                             3      3      2      0     0%
+be\model\__init__.py                  0      0      0      0   100%
+be\model\buyer.py                   271     52    148     25    78%
+be\model\db_conn.py                  24      0     14      0   100%
+be\model\error.py                    31      1      0      0    97%
+be\model\orm_models.py               57      0     12      0   100%
+be\model\searcher.py                 50     12     26      4    74%
+be\model\seller.py                  130     31     76      7    75%
+be\model\store.py                    28      1      4      1    94%
+be\model\user.py                    132     23     58     10    78%
+be\serve.py                          37      1      2      1    95%
+be\view\__init__.py                   0      0      0      0   100%
+be\view\auth.py                      42      0      0      0   100%
+be\view\buyer.py                     68      0      8      0   100%
+be\view\searcher.py                  42      2     12      1    94%
+be\view\seller.py                    58      0      6      0   100%
+fe\__init__.py                        0      0      0      0   100%
+fe\access\__init__.py                 0      0      0      0   100%
+fe\access\auth.py                    31      0      2      0   100%
+fe\access\book.py                    63      0     18      1    99%
+fe\access\buyer.py                   55      0      4      0   100%
+fe\access\new_buyer.py                8      0      0      0   100%
+fe\access\new_searcher.py             8      0      0      0   100%
+fe\access\new_seller.py               8      0      0      0   100%
+fe\access\searcher.py                33      1      6      1    95%
+fe\access\seller.py                  45      0      2      0   100%
+fe\bench\__init__.py                  0      0      0      0   100%
+fe\bench\run.py                      13      0      6      0   100%
+fe\bench\session.py                  47      0     14      1    98%
+fe\bench\workload.py                125      1     28      2    98%
+fe\conf.py                           11      0      0      0   100%
+fe\conftest.py                       17      0      0      0   100%
+fe\test\add_store_book.py            46      2     18      2    94%
+fe\test\gen_book_data.py             48      0     18      0   100%
+fe\test\test_add_book.py             36      0     12      0   100%
+fe\test\test_add_funds.py            23      0      2      0   100%
+fe\test\test_add_stock_level.py      39      0     12      0   100%
+fe\test\test_bench.py                 6      2      0      0    67%
+fe\test\test_cancel_order.py         76      1      6      1    98%
+fe\test\test_create_store.py         20      0      2      0   100%
+fe\test\test_deliver.py              59      1      6      1    97%
+fe\test\test_login.py                28      0      2      0   100%
+fe\test\test_new_order.py            40      0      2      0   100%
+fe\test\test_password.py             33      0      2      0   100%
+fe\test\test_payment.py              60      1      6      1    97%
+fe\test\test_receive.py              66      1      6      1    97%
+fe\test\test_register.py             31      0      2      0   100%
+fe\test\test_search.py               53      0      6      2    97%
+fe\test\test_search_order.py         35      0      2      0   100%
+fe\test\test_seller_search.py        33      0      2      0   100%
+fe\test\test_timeout_cancel.py       50      0      2      0   100%
+-------------------------------------------------------------------
+TOTAL                              2219    136    556     62    91%
+Wrote HTML report to htmlcov\index.html
